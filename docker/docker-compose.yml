@@ -127,10 +127,10 @@ services:
     volumes:
       - ./librechat.yaml:/app/librechat.yaml:ro
       - librechat-data:/app/client/public/images
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
-      - backend
       - mongodb
-      - searxng
 
 volumes:
   backend-data:

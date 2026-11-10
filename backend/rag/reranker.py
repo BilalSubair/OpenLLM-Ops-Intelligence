@@ -1,22 +1,28 @@
+"""
+BGE Cross-Encoder Reranker Module.
+Re-ranks candidate document chunks against user questions for high precision.
+Uses lazy loading and graceful offline fallback.
+"""
 
-from sentence_transformers import CrossEncoder
+from typing import List, Dict, Any, Optional
 
-
-# --------------------------------------------------
-# RERANKER CONFIGURATION
-# --------------------------------------------------
+try:
+    from sentence_transformers import CrossEncoder
+except ImportError:
+    CrossEncoder = None
 
 RERANKER_MODEL = "BAAI/bge-reranker-base"
+_reranker = None
 
-# Load the model once when this module is imported
-print("Loading BGE reranker model...")
 
-reranker = CrossEncoder(
-    RERANKER_MODEL,
-    max_length=512
-)
-
-print("BGE reranker loaded successfully!")
+def get_reranker():
+    global _reranker
+    if _reranker is None and CrossEncoder:
+        try:
+            _reranker = CrossEncoder(RERANKER_MODEL, max_length=512)
+        except Exception:
+            _reranker = False
+    return _reranker if _reranker is not False else None
 
 
 # --------------------------------------------------
@@ -31,31 +37,38 @@ def rerank_documents(
     if not documents:
         return []
 
-    # Create question-document pairs
-    pairs = [
-        [question, document["document"]]
-        for document in documents
-    ]
+    model = get_reranker()
 
-    # Calculate relevance scores
-    scores = reranker.predict(pairs)
+    if model:
+        # Create question-document pairs
+        pairs = [
+            [question, document["document"]]
+            for document in documents
+        ]
 
-    # Attach scores to documents
-    ranked_results = []
+        scores = model.predict(pairs)
 
-    for document, score in zip(documents, scores):
-        ranked_results.append({
-            "id": document["id"],
-            "document": document["document"],
+        ranked_results = []
+        for document, score in zip(documents, scores):
+            ranked_results.append({
+                "id": document["id"],
+                "document": document["document"],
+                "rerank_score": float(score)
+            })
+
+        ranked_results.sort(
+            key=lambda item: item["rerank_score"],
+            reverse=True
+        )
+        return ranked_results[:top_k]
+
+    # Offline / Graceful Fallback: retain existing scores (RRF or dense)
+    results = []
+    for rank, doc in enumerate(documents[:top_k], 1):
+        score = doc.get("rrf_score") or doc.get("score") or round(1.0 / rank, 3)
+        results.append({
+            "id": doc["id"],
+            "document": doc["document"],
             "rerank_score": float(score)
         })
-
-    # Sort by relevance score
-    ranked_results.sort(
-        key=lambda item: item["rerank_score"],
-        reverse=True
-    )
-
-    # Return top relevant documents
-    return ranked_results[:top_k]
-
+    return results
