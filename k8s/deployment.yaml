@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openllm-ops-backend
+  namespace: openllm-ops
+  labels:
+    app: openllm-ops-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openllm-ops-backend
+  template:
+    metadata:
+      labels:
+        app: openllm-ops-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # GPU Node Toleration for dedicated NVIDIA GPU pools
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "sku"
+          operator: "Equal"
+          value: "gpu"
+          effect: "NoSchedule"
+
+      containers:
+        - name: backend
+          image: openllm-ops-backend:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: OLLAMA_URL
+              value: "http://ollama-service.openllm-ops.svc.cluster.local:11434"
+            - name: SEARXNG_URL
+              value: "http://searxng-service.openllm-ops.svc.cluster.local:8080"
+            - name: CHROMA_PERSIST_DIR
+              value: "/app/chroma_db"
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "all"
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: "compute,utility"
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "8"
+              memory: "32Gi"
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            # Mount high-speed shared memory to prevent PyTorch/vLLM Bus errors
+            - name: dshm
+              mountPath: /dev/shm
+            - name: persistent-storage
+              mountPath: /app/data
+            - name: chroma-storage
+              mountPath: /app/chroma_db
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: openllm-ops-data-pvc
+        - name: chroma-storage
+          persistentVolumeClaim:
+            claimName: openllm-ops-chroma-pvc

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openllm-ops
+  labels:
+    app.kubernetes.io/part-of: openllm-ops-intelligence
+    environment: production

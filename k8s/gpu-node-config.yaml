@@ -1,0 +1,43 @@
+# ==============================================================================
+# NVIDIA GPU Operator & Cluster Node Configuration Reference
+# ==============================================================================
+
+# Example ClusterPolicy Custom Resource for NVIDIA GPU Operator
+apiVersion: nvidia.com/v1
+kind: ClusterPolicy
+metadata:
+  name: gpu-cluster-policy
+spec:
+  operator:
+    defaultRuntime: crio
+  driver:
+    enabled: true
+    version: "535.129.03"
+  toolkit:
+    enabled: true
+  devicePlugin:
+    enabled: true
+  dcgmExporter:
+    enabled: true
+  gfd:
+    enabled: true
+  nodeStatusExporter:
+    enabled: true
+---
+# Dedicated GPU Worker Node Taint Reference
+# Apply to GPU nodes via:
+# kubectl taint nodes <node-name> nvidia.com/gpu=present:NoSchedule
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gpu-node-guidelines
+  namespace: openllm-ops
+data:
+  taint-instructions.txt: |
+    To ensure general CPU workloads are not scheduled on expensive GPU instances:
+    1. Label GPU node:
+       kubectl label nodes <node-name> accelerator=nvidia-gpu
+    2. Taint GPU node:
+       kubectl taint nodes <node-name> nvidia.com/gpu=present:NoSchedule
+    3. Verify NVIDIA Device Plugin exposes allocatable GPUs:
+       kubectl get nodes -o custom-columns=NAME:.metadata.name,GPUS:.status.allocatable.'nvidia\.com/gpu'

@@ -1,0 +1,180 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "GPU & VRAM Infrastructure Telemetry",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Overall GPU Utilization",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "expr": "llm_ops_gpu_utilization_percent",
+          "legendFormat": "GPU Compute %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 75 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "VRAM Utilization %",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "targets": [
+        {
+          "expr": "llm_ops_gpu_vram_utilization_percent",
+          "legendFormat": "VRAM Used %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "red", "value": 95 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "VRAM Allocation (Bytes)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "expr": "llm_ops_gpu_vram_used_bytes",
+          "legendFormat": "Used VRAM",
+          "refId": "A"
+        },
+        {
+          "expr": "llm_ops_gpu_vram_total_bytes",
+          "legendFormat": "Total VRAM",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 101,
+      "title": "LLM Inference Latency & Token Performance",
+      "type": "row"
+    },
+    {
+      "id": 4,
+      "title": "Token Generation Speed (Tokens/sec)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "llm_ops_inference_tokens_per_second",
+          "legendFormat": "Tokens / Sec",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "tps",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 15 },
+              { "color": "green", "value": 35 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Inference Latency (Avg & P95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 10, "x": 6, "y": 8 },
+      "targets": [
+        {
+          "expr": "llm_ops_inference_latency_avg_ms",
+          "legendFormat": "Avg Latency (ms)",
+          "refId": "A"
+        },
+        {
+          "expr": "llm_ops_inference_latency_p95_ms",
+          "legendFormat": "P95 Latency (ms)",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Total Invocations & Errors",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 8 },
+      "targets": [
+        {
+          "expr": "llm_ops_inference_requests_total",
+          "legendFormat": "Total Requests",
+          "refId": "A"
+        },
+        {
+          "expr": "llm_ops_inference_failed_requests_total",
+          "legendFormat": "Failed Requests",
+          "refId": "B"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["llmops", "gpu", "rag", "vllm", "monitoring"],
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "title": "OpenLLM Ops Intelligence – Telemetry Dashboard"
+}

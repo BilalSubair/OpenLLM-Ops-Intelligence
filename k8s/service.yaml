@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openllm-ops-service
+  namespace: openllm-ops
+  labels:
+    app: openllm-ops-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: openllm-ops-backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
