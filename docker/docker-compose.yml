@@ -95,6 +95,16 @@ services:
       - prometheus
 
   # --------------------------------------------------
+  # MongoDB for LibreChat State & User Sessions
+  # --------------------------------------------------
+  mongodb:
+    image: mongo:latest
+    container_name: openllm-ops-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb-data:/data/db
+
+  # --------------------------------------------------
   # Conversational Interface (LibreChat)
   # --------------------------------------------------
   librechat:
@@ -106,9 +116,21 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=3080
-      - OPENAI_REVERSE_PROXY=http://backend:8000/api/llm/chat
+      - MONGO_URI=mongodb://mongodb:27017/LibreChat
+      - CONFIG_PATH=/app/librechat.yaml
+      - JWT_SECRET=openllm_ops_jwt_secret_token_123456789
+      - JWT_REFRESH_SECRET=openllm_ops_jwt_refresh_token_123456789
+      - CREDS_KEY=f34be427eff7db32e5faf94f923b7a42
+      - CREDS_IV=e921e909e7674251e0ff051f28fb87e2
+      - SEARCH=true
+      - SEARXNG_INSTANCE_URL=http://searxng:8080
+    volumes:
+      - ./librechat.yaml:/app/librechat.yaml:ro
+      - librechat-data:/app/client/public/images
     depends_on:
       - backend
+      - mongodb
+      - searxng
 
 volumes:
   backend-data:
@@ -117,3 +139,5 @@ volumes:
   searxng-data:
   prometheus-data:
   grafana-data:
+  mongodb-data:
+  librechat-data:

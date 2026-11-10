@@ -41,6 +41,9 @@ from rag_advanced.metadata_filtering import search_with_metadata_filter
 from rag_advanced.evaluation import evaluate_retrieval_accuracy
 from rag_advanced.hallucination import assess_hallucination
 
+# OpenAI & LibreChat Compatibility Router
+from openai_api import router as openai_router
+
 
 # --------------------------------------------------
 # APPLICATION CONFIGURATION
@@ -51,6 +54,9 @@ app = FastAPI(
     description="AI-powered LLM infrastructure monitoring, management and troubleshooting platform",
     version="2.0.0"
 )
+
+# Register OpenAI Compatibility Router (/v1/models, /v1/chat/completions)
+app.include_router(openai_router)
 
 OLLAMA_URL = "http://localhost:11434"
 MODEL_NAME = "qwen3.5:2b"
