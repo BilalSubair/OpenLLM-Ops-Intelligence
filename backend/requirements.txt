@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+httpx
+chromadb
+pypdf
+rank-bm25
+sentence-transformers

@@ -1,0 +1,46 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# ChromaDB database
+chroma_db/
+**/chroma_db/
+
+# Uploaded documents and local data
+backend/data/uploads/
+backend/data/documents/
+backend/data/
+
+# Model caches
+.cache/
+huggingface_cache/
+models/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
